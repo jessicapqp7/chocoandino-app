@@ -1,4 +1,5 @@
 import streamlit as st
+import streamlit.components.v1 as components
 import pandas as pd
 import plotly.express as px
 import folium
@@ -127,7 +128,8 @@ st.markdown(
 
 
 # --- Sidebar personalizado ---
-st.sidebar.image("images/logo.png", use_column_width=True)
+st.sidebar.image("images/logo.png", use_container_width=True)  # Cambié use_column_width a use_container_width
+
 st.sidebar.markdown("## 🌿 ENSO-Chocó App")
 
 
@@ -165,20 +167,54 @@ st.markdown(
 
 # --- Introducción ---
 if opciones == "📘 Introducción":
-    st.title("🌎 Proyecto: ENSO y Precipitación en el Chocó Andino")
-    st.markdown(
-        """
-    <div class="st-bb">
-        <p>Este proyecto analiza la relación entre los eventos ENSO (<strong>El Niño</strong>, <strong>La Niña</strong> y <strong>Neutro</strong>)
-        y la precipitación en el <strong>Chocó Andino</strong> entre los años <strong>1992 y 2022</strong>.</p>
 
-        <p>Se utilizan <em>análisis estadísticos</em>, <em>visualizaciones interactivas</em> y <em>mapas dinámicos</em> para evaluar el impacto
-        de estos fenómenos climáticos en seis estaciones ubicadas en la región.</p>
-    </div>
-    """,
-        unsafe_allow_html=True,
-    )
+
+    st.title("🌎 Proyecto: ENSO y Precipitación en el Chocó Andino")
+    
+    # HTML como cadena de texto
+    html_code = """
+    <div style="background-color: #f8f8f8; padding: 3rem; border-radius: 15px; box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.1);">
+        <div style="text-align: center;">
+            <h2 style="color: #004d7a; font-size: 30px; font-weight: bold; margin-bottom: 20px;">El Fenómeno ENSO</h2>
+            <p style="font-size: 20px; color: #595959; line-height: 1.6; max-width: 800px; margin: 0 auto;">
+                El fenómeno <strong>ENSO</strong> es un evento climático interanual que altera significativamente las condiciones atmosféricas y oceánicas a nivel global. 
+                Este fenómeno se presenta en tres fases: <strong>El Niño</strong>, <strong>La Niña</strong> y una fase <strong>Neutra</strong>, 
+                cada una con impactos distintos sobre los sistemas naturales y humanos, especialmente en la distribución de las lluvias y temperaturas en regiones tropicales.
+            </p>
+        </div>
+
+        <div style="background-color: #ffffff; padding: 2rem; margin-top: 30px; border-radius: 10px; box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.05);">
+            <h3 style="color: #004d7a; font-size: 24px; font-weight: bold;">🎯 Objetivo del Proyecto</h3>
+            <p style="font-size: 18px; color: #595959; line-height: 1.6;">
+                Este proyecto analiza la relación entre los eventos ENSO (El Niño, La Niña y Neutro) y la precipitación en el <strong>Chocó Andino</strong> entre los años 
+                <strong>1992 y 2022</strong>, utilizando herramientas estadísticas y de visualización avanzada.
+            </p>
+        </div>
+
+        <div style="background-color: #ffffff; padding: 2rem; margin-top: 30px; border-radius: 10px; box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.05);">
+            <h3 style="color: #004d7a; font-size: 24px; font-weight: bold;">🔬 Metodología</h3>
+            <p style="font-size: 18px; color: #595959; line-height: 1.6;">
+                Se emplean análisis estadísticos rigurosos, visualizaciones interactivas y mapas dinámicos para evaluar el impacto de los eventos ENSO en las estaciones meteorológicas ubicadas en la región.
+            </p>
+        </div>
+
+        <div style="background-color: #ffffff; padding: 2rem; margin-top: 30px; border-radius: 10px; box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.05); display: flex; justify-content: space-between; align-items: center;">
+            <div style="flex: 1; padding-right: 20px;">
+                <h3 style="color: #004d7a; font-size: 24px; font-weight: bold;">👥 Integrantes</h3>
+                <p style="font-size: 18px; color: #595959; line-height: 1.6;">
+                    <span style="font-weight: bold; color: #1f4e79;">💼 Lizeth Aguilar</span> <br>
+                    <span style="font-weight: bold; color: #1f4e79;">🎓 Jessica Quinga</span> <br>
+                    <span style="font-weight: bold; color: #1f4e79;">🔬 Deysi Remache</span> 
+                </p>
+            </div>
+         </div>
+    """
+    
+    # Usamos st.components.v1.html para procesar el HTML
+    components.html(html_code, height=1200)
+
     st.success("Usa el panel lateral para navegar entre las secciones del proyecto.")
+
 
 # --- Análisis Gráfico ---
 elif opciones == "📈 Análisis Gráfico":
@@ -1145,16 +1181,14 @@ elif opciones == "📊 Correlaciones":
 elif opciones == "🗺️ Mapa Interactivo":
     st.title("📍 Estaciones Meteorológicas en el Chocó Andino")
 
-    import os
+    import streamlit as st
     import pandas as pd
-    import folium
-    from streamlit_folium import folium_static
     import json
-    from shapely.geometry import shape
-    from folium import LinearColormap
-
-    base_path = "data"
-
+    import pydeck as pdk
+    import matplotlib.pyplot as plt
+    import matplotlib.colors as mcolors
+    
+    # === Coordenadas ===
     estaciones_coords = {
         "Estación 1": {"coord": (-78.4869, 1.1538)},
         "Estación 2": {"coord": (-78.8486, 1.1657)},
@@ -1164,105 +1198,213 @@ elif opciones == "🗺️ Mapa Interactivo":
         "Estación 6": {"coord": (-79.2675, 0.1138)},
     }
 
-    # === Leer datos de estaciones ===
+    # === Selección de variable ===
+    variable_opciones = {
+        "Precipitación": "Precipitacion (mm)",
+        "SPI": "SPI",
+        "Temperatura": "Temperatura (Â°C)",
+        "Humedad": "Humedad (%)"
+    }
+    variable_amigable = st.selectbox("Selecciona la variable:", list(variable_opciones.keys()))
+    variable = variable_opciones[variable_amigable]
+
+    # === Cargar datos desde Excel ===
+    base_path = "data"
     datos_estaciones = {}
     for nombre, info in estaciones_coords.items():
         estacion_num = nombre.split(" ")[-1]
-        archivo = os.path.join(base_path, f"Estacion {estacion_num}", "Resumen_Anual.xlsx")
-        if os.path.exists(archivo):
+        archivo = f"{base_path}/Estacion {estacion_num}/Resumen_Anual.xlsx"
+        try:
             df = pd.read_excel(archivo)
             datos_estaciones[nombre] = df
+        except:
+            continue
 
-    # === Selección de variable y año ===
-    variable = st.selectbox("Selecciona la variable:", ["Precipitación", "SPI promedio", "SPI mínimo"])
-    años_disponibles = sorted(list(set(a for df in datos_estaciones.values() for a in df["Año"].unique())))
-    año_seleccionado = st.slider("Selecciona el año:", min_value=min(años_disponibles), max_value=max(años_disponibles), value=min(años_disponibles))
-
-    # === Mapa base ===
-    mapa = folium.Map(tiles="CartoDB positron", zoom_start=8, location=[0.6, -79])
-
-    # === GeoJSON del Chocó Andino ===
-    geojson_path = os.path.join(base_path, "choco_andino_export.geojson")
-    if os.path.exists(geojson_path):
-        with open(geojson_path, "r", encoding="utf-8") as f:
-            geojson_data = json.load(f)
-
-        folium.GeoJson(
-            geojson_data,
-            name="Chocó Andino",
-            style_function=lambda feature: {
-                "fillColor": "#66bd63",
-                "color": "#1a9850",
-                "weight": 2,
-                "fillOpacity": 0.3,
-            }
-        ).add_to(mapa)
-
-        geometries = [shape(feature["geometry"]) for feature in geojson_data["features"]]
-        bounds = geometries[0].bounds
-        for geom in geometries[1:]:
-            bounds = (
-                min(bounds[0], geom.bounds[0]),
-                min(bounds[1], geom.bounds[1]),
-                max(bounds[2], geom.bounds[2]),
-                max(bounds[3], geom.bounds[3]),
-            )
-        mapa.fit_bounds([[bounds[1], bounds[0]], [bounds[3], bounds[2]]])
-
-    # === Calcular rango dinámico del año seleccionado ===
-    valores_actuales = []
-    for df in datos_estaciones.values():
-        if año_seleccionado in df["Año"].values:
-            v = df[df["Año"] == año_seleccionado][variable].values[0]
-            if pd.notnull(v):
-                valores_actuales.append(v)
-
-    if len(valores_actuales) == 0:
-        min_val, max_val = 0, 1
-    else:
-        min_val = min(valores_actuales)
-        max_val = max(valores_actuales)
-        if min_val == max_val:
-            min_val -= 0.5
-            max_val += 0.5
-
-    # === Paletas temáticas ===
-    if "Precipitación" in variable:
-        color_scale = ["#c6dbef", "#6baed6", "#2171b5", "#08306b"]
-    else:
-        color_scale = ["#6aacd0", "#f7f7f7", "#e58267", "#67001f"]
-
-    colormap = LinearColormap(
-        colors=color_scale,
-        vmin=min_val,
-        vmax=max_val
+    año_seleccionado = st.slider(
+        "Selecciona el año:",
+        min_value=1992,
+        max_value=2022,
+        value=1992,
+        step=1,
+        format="%d"
     )
-    colormap.caption = f"{variable} en {año_seleccionado}"
-    colormap.add_to(mapa)
 
-    # === Agregar estaciones al mapa ===
+    # === Rango y color ===
+    valores = []
+    for df in datos_estaciones.values():
+        if variable in df.columns:
+            valores.extend(df[variable].dropna().values)
+
+    if not valores:
+        st.warning(f"No se encontraron datos para la variable '{variable_amigable}' en los archivos cargados.")
+        st.stop()
+
+    min_val, max_val = min(valores), max(valores)
+    norm = mcolors.Normalize(vmin=min_val, vmax=max_val)
+    cmap = plt.get_cmap("RdYlBu")
+
+    # === Datos de estaciones para el mapa ===
+    # === Preparar estaciones con criticidad ===
+    stations_data = []
+    estaciones_temporales = []
+
     for nombre, info in estaciones_coords.items():
         lat, lon = info["coord"][1], info["coord"][0]
         df = datos_estaciones.get(nombre)
-
         if df is not None and año_seleccionado in df["Año"].values:
-            valor = df[df["Año"] == año_seleccionado][variable].values[0]
-            color = colormap(valor)
-            popup_html = f"""
-                <b>{nombre}</b><br>
-                <b>Año:</b> {año_seleccionado}<br>
-                <b>{variable}:</b> {round(valor, 2)}
-            """
-            folium.CircleMarker(
-                location=(lat, lon),
-                radius=10,
-                popup=popup_html,
-                color=color,
-                fill=True,
-                fill_color=color,
-                fill_opacity=0.9,
-                tooltip=nombre
-            ).add_to(mapa)
+            row = df[df["Año"] == año_seleccionado]
+            if not row.empty and variable in row.columns:
+                valor = row[variable].values[0]
 
-    folium_static(mapa)
-    st.success("✅ Cambia el año y observa cómo los colores del mapa reflejan las diferencias de valor entre estaciones.")
+                # Calcular criticidad
+                if variable == "SPI":
+                    criticidad = abs(valor)
+                elif variable == "Humedad (%)":
+                    criticidad = max(0, valor - 90)
+                elif variable == "Temperatura (Â°C)":
+                    criticidad = max(0, valor - 25)
+                else:
+                    criticidad = 0
+
+                estaciones_temporales.append((nombre, criticidad, lat, lon, valor, df))
+
+    # === Determinar estaciones más y menos críticas ===
+    if estaciones_temporales:
+        max_critica = max(estaciones_temporales, key=lambda x: x[1])[0]
+        min_critica = min(estaciones_temporales, key=lambda x: x[1])[0]
+
+        # === Asignar colores e íconos ===
+        for nombre, criticidad, lat, lon, valor, df in estaciones_temporales:
+            # Colores según condición
+            if variable == "SPI" and valor <= -1:
+                color = [255, 0, 0, 255]
+            elif variable == "SPI" and valor >= 1:
+                color = [0, 0, 200, 255]
+            elif variable == "Humedad (%)" and valor >= 90:
+                color = [128, 0, 128, 255]
+            elif variable == "Temperatura (Â°C)" and valor >= 25:
+                color = [255, 215, 0, 255]
+            else:
+                rgba_float = mcolors.to_rgba(cmap(norm(valor)))
+                color = [int(x * 255) for x in rgba_float]
+
+            # Íconos personalizados
+            if nombre == max_critica:
+                icono_usar = {
+                    "url": "https://cdn-icons-png.flaticon.com/512/564/564619.png",  # peligro máximo
+                    "width": 128, "height": 128, "anchorY": 128
+                }
+            elif nombre == min_critica:
+                icono_usar = {
+                    "url": "https://cdn-icons-png.flaticon.com/512/190/190411.png",  # leve alerta
+                    "width": 128, "height": 128, "anchorY": 128
+                }
+            else:
+                icono_usar = {
+                    "url": "https://cdn-icons-png.flaticon.com/512/252/252035.png",  # estación normal
+                    "width": 128, "height": 128, "anchorY": 128
+                }
+
+            # Agregar estación al mapa
+            stations_data.append({
+                "name": nombre,
+                "latitude": lat,
+                "longitude": lon,
+                "elevation": 10000,
+                "color": color,
+                "value": round(valor, 2),
+                "año": año_seleccionado,
+                "icon_data": icono_usar
+            })
+
+
+    # === Capa: estaciones (círculo grande) ===
+    station_layer = pdk.Layer(
+        "ScatterplotLayer",
+        stations_data,
+        get_position=["longitude", "latitude"],
+        get_elevation="elevation",
+        get_fill_color="color",
+        get_radius=2500,
+        radius_min_pixels=4,
+        pickable=True,
+    )
+
+    # === Capa: ícono de estación meteorológica ===
+    icon_layer = pdk.Layer(
+        "IconLayer",
+        stations_data,
+        get_icon="icon_data",
+        get_position=["longitude", "latitude"],
+        get_size=8,           # Aumentado
+        size_scale=10,
+        pickable=True
+    )
+
+    # === Capa: polígono (Chocó Andino) ===
+    with open(f"{base_path}/choco_andino_export.geojson", "r", encoding="utf-8") as f:
+        geojson_data = json.load(f)
+
+    polygon_layer = pdk.Layer(
+        "GeoJsonLayer",
+        geojson_data,
+        stroked=True,
+        filled=True,
+        extruded=False,
+        get_fill_color="[102, 189, 99, 50]",  # verde claro con transparencia
+        get_line_color=[26, 152, 80],
+        get_line_width=2,
+        pickable=False,
+    )
+
+    # === Vista 3D ===
+    view_state = pdk.ViewState(
+        latitude=0.6,
+        longitude=-79,
+        zoom=8,
+        pitch=50,
+        bearing=0
+    )
+
+    # === Renderizar todas las capas ===
+    r = pdk.Deck(
+        layers=[polygon_layer, station_layer, icon_layer],
+        initial_view_state=view_state,
+        map_style="light",
+        tooltip={
+            "html": "<b>{name}</b><br>Valor: {value}<br>Año: {año}",
+            "style": {"backgroundColor": "rgba(0, 0, 0, 0.7)", "color": "white"}
+        }
+    )
+
+    # Mostrar el mapa 3D y capturar eventos de clic
+    deck_event = st.pydeck_chart(r)
+
+# === Crear columnas para leyenda y tabla ===
+    col1, col2 = st.columns([1, 1])
+
+    # === Columna izquierda: leyenda de colores ===
+    with col1:
+        st.markdown("#### 🎨 Leyenda")
+        fig, ax = plt.subplots(figsize=(3.5, 0.3))
+        fig.subplots_adjust(left=0.1, right=0.9, top=0.8, bottom=0.3)
+
+        cbar = plt.colorbar(
+            plt.cm.ScalarMappable(norm=norm, cmap=cmap),
+            cax=ax,
+            orientation='horizontal'
+        )
+        cbar.set_label(f"{variable_amigable} ({round(min_val, 2)} - {round(max_val, 2)})", fontsize=8)
+        cbar.ax.tick_params(labelsize=6)
+
+        st.pyplot(fig)
+
+    # === Columna derecha: tabla de estación seleccionada ===
+    with col2:
+        estacion_seleccionada = st.selectbox("Selecciona una estación para ver sus datos:", list(datos_estaciones.keys()))
+        df = datos_estaciones[estacion_seleccionada]
+        df_año = df[df["Año"] == año_seleccionado]
+
+        st.markdown(f"### 📊 Detalles de {estacion_seleccionada} - {año_seleccionado}")
+        st.dataframe(df_año)
+

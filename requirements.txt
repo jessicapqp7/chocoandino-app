@@ -1,6 +1,6 @@
-streamlit==1.35.0
-pandas>=1.5,<2.2
-numpy>=1.26,<2.2
-openpyxl
-matplotlib
-pywt
+streamlit==1.13.0
+pandas==1.5.3
+numpy==1.23.5
+openpyxl==3.1.2
+matplotlib==3.6.0
+pywt==1.1.1
