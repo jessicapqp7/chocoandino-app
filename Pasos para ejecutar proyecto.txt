@@ -1,0 +1,61 @@
+1. Descargar el proyecto desde GitHub
+Abre este enlace:
+https://github.com/jessicapqp7/chocoandino-app.git
+
+Haz clic en el botón verde Code y selecciona Download ZIP.
+
+Extrae el archivo ZIP en cualquier ubicación de tu computadora.
+Por ejemplo:
+C:\Users\sebas\OneDrive\Escritorio\Project
+
+2. Abrir Anaconda Prompt
+Si no tienes Anaconda instalado, puedes descargarlo desde:
+https://www.anaconda.com/download
+
+Una vez instalado, abre Anaconda Prompt (no es lo mismo que la terminal normal).
+
+3. Navegar hasta la carpeta del proyecto
+Escribe el siguiente comando para acceder a la carpeta donde extrajiste el ZIP
+Ejemplo:
+cd C:\Users\sebas\OneDrive\Escritorio\Project
+
+4. Crear un entorno virtual limpio
+Esto asegura que las librerías que uses no entren en conflicto con otros proyectos.
+
+conda create -n enso-app python=3.10 -y
+
+5. Activar el entorno
+
+conda activate enso-app
+Verás que cambia de (base) a (enso-app) al inicio de la línea, indicando que el entorno está activo.
+
+6. Instalar las librerías necesarias
+Instala todas las bibliotecas que necesita el proyecto:
+
+pip install streamlit streamlit-folium kaleido pandas numpy plotly openpyxl matplotlib pydeck folium pywavelets scikit-learn statsmodels
+
+Espera a que se complete toda la instalación antes de seguir.
+
+7. Ejecutar la aplicación
+Asegúrate de estar dentro de la carpeta donde está el archivo principal del proyecto
+
+streamlit run app.py
+
+8. Ver la aplicación en el navegador
+Después de ejecutar, se abrirá automáticamente tu navegador web en la dirección:
+
+http://localhost:8501
+Aquí podrás usar toda la app interactiva con gráficos, NDVI, mapas 3D, etc.
+
+9. (Importante) Primera vez en una computadora nueva
+
+Streamlit puede pedir permiso para autenticarse con tu cuenta de Gmail.
+Si es así, sigue el enlace que aparece y copia el código de autenticación que te da Google.
+Esto es normal, solo ocurre la primera vez.
+
+
+
+
+
+
+
